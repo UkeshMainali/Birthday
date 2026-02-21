@@ -1512,8 +1512,25 @@
       else { h.textContent = '❌ Nope! Keep guessing or just scratch!'; h.style.color = '#ff3333'; }
     }
 
-    // ── INIT ─────────────────────────────────────────────
-    // just to warm up: but we rely on tick() for birthday detection
+    // ── PAGE LOAD CONFETTI BURST ─────────────────────────────
+    // This ensures confetti pops every time the page loads
+    window.addEventListener('load', function() {
+      // Initial confetti burst on page load
+      spawnConfetti(50);
+      spawnBalloonBurst(5);
+      
+      // Second burst after 0.5 seconds for extra pop
+      setTimeout(() => {
+        spawnConfetti(40);
+        spawnBalloonBurst(3);
+      }, 500);
+      
+      // Third burst after 1 second for sustained effect
+      setTimeout(() => {
+        spawnConfetti(30);
+        spawnBalloonBurst(2);
+      }, 1000);
+    });
   </script>
 </body>
 
