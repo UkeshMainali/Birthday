@@ -1181,7 +1181,7 @@
     function tick() {
       const now = new Date(), nb = getNextBirthday(), diff = nb - now;
       const currentAge = calcAge(now), nextAge = currentAge + 1;
-      document.getElementById('ageBadge').textContent = `🎉 Turning ${nextAge}! 🎉`;
+      document.getElementById('ageBadge').textContent = `🎉 Always 16! 🎉`;
       document.getElementById('cdLabel').textContent = `⏰ COUNTDOWN TO ${nextAge}TH BIRTHDAY ⏰`;
 
       if (isBirthdayToday()) {
@@ -1192,7 +1192,7 @@
         // Show the glowing birthday message
         const bd = document.getElementById('bdayNow');
         bd.style.display = 'block';
-        bd.innerHTML = `🎉 IT'S YOUR BIRTHDAY TODAY! 🎉<br><span style="font-size:.8em;color:#fff;text-shadow:none;">Happy ${nextAge}th, gorgeous! 🌟</span>`;
+        bd.innerHTML = `🎉 IT'S YOUR BIRTHDAY TODAY! 🎉<br><span style="font-size:.8em;color:#fff;text-shadow:none;">Happy 16th, gorgeous! 🌟</span>`;
 
         // Trigger the eruption once per page load (not every second)
         if (!_birthdayFired) {
