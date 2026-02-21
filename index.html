@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🎂 Happy Birthday, Yunau! 🎂</title>
+  <title>🎂 Happy Birthday! 🎂</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;900&display=swap"
     rel="stylesheet">
   <style>
@@ -282,23 +282,25 @@
       }
     }
 
+    /* BIRTHDAY NOW — enhanced glowing panel */
     .birthday-now {
       display: none;
-      font-size: clamp(14px, 5vw, 24px);
+      font-size: clamp(10px, 3.2vw, 15px);
       color: var(--gold);
-      text-shadow: 0 0 20px gold, 0 0 40px #ffaa00;
-      animation: glowPulse 0.8s ease-in-out infinite alternate;
-      padding: 20px 10px;
-      line-height: 1.8;
-      background: rgba(0,0,0,0.3);
-      border-radius: 30px;
-      border: 3px solid gold;
-      margin: 10px 0;
+      text-shadow: 0 0 18px gold, 0 0 36px #ffaa00;
+      animation: bdayPulse 1.4s ease-in-out infinite alternate, rainbow 1s linear infinite;
+      padding: 16px 10px;
+      line-height: 2.2;
+      border: 3px solid var(--gold);
+      box-shadow: 0 0 24px var(--gold), inset 0 0 18px rgba(255,215,0,.15);
+      background: rgba(0,0,0,.35);
+      border-radius: 0;
+      margin: 0 auto;
     }
-    
-    @keyframes glowPulse {
-      from { text-shadow: 0 0 20px gold, 0 0 40px #ffaa00; transform: scale(1); }
-      to { text-shadow: 0 0 40px gold, 0 0 80px #ffaa00, 0 0 120px #ff6600; transform: scale(1.03); }
+
+    @keyframes bdayPulse {
+      from { transform: scale(1);   box-shadow: 0 0 18px var(--gold), inset 0 0 10px rgba(255,215,0,.1); }
+      to   { transform: scale(1.03); box-shadow: 0 0 48px #ffaa00,    inset 0 0 28px rgba(255,215,0,.25); }
     }
 
     /* CAKE */
@@ -940,7 +942,7 @@
 
     <div class="divider">◆ ◆ ◆ ◆ ◆</div>
 
-    <!-- COUNTDOWN / BIRTHDAY MESSAGE -->
+    <!-- COUNTDOWN -->
     <div class="cd-section pbox">
       <span class="cd-label" id="cdLabel">⏰ COUNTDOWN TO BIRTHDAY ⏰</span>
       <div class="cd-grid" id="cdGrid">
@@ -949,7 +951,7 @@
         <div class="cd-block" data-l="MINS"><span class="cd-num" id="mins">00</span></div>
         <div class="cd-block" data-l="SECS"><span class="cd-num" id="secs">00</span></div>
       </div>
-      <div class="birthday-now" id="bdayNow">🎉 IT'S YOUR BIRTHDAY TODAY! 🎉<br><span style="font-size:0.7em;">✨ YUNAU ✨</span></div>
+      <div class="birthday-now" id="bdayNow">🎉 IT'S YOUR BIRTHDAY TODAY! 🎉</div>
     </div>
 
     <div class="divider">◆ ◆ ◆ ◆ ◆</div>
@@ -1127,56 +1129,39 @@
     setInterval(mkBalloon, 2200);
     for (let i = 0; i < 4; i++) setTimeout(mkBalloon, i * 600);
 
-    // ── BIRTHDAY EXPLOSION LOGIC (with _birthdayFired flag) ────────────────────
-    let _birthdayFired = false; // ensures it only triggers once
-    const confCols = ['#ff69b4', '#FFD700', '#0088cc', '#cc44ff', '#ff3333', '#00cc88', '#ff8800', '#fff'];
-    const confShapes = ['★', '✦', '●', '■', '▲', '♥', '◆'];
-    
-    function spawnConfetti(count) {
-      const wrap = document.getElementById('confetti');
-      for (let i = 0; i < (count || 20); i++) {
-        const c = document.createElement('div'); c.className = 'confetti-piece';
-        c.textContent = confShapes[Math.floor(Math.random() * confShapes.length)];
-        c.style.cssText = `left:${Math.random() * 100}%;top:-20px;color:${confCols[Math.floor(Math.random() * confCols.length)]};font-size:${8 + Math.random() * 12}px;animation-duration:${2 + Math.random() * 3}s;animation-delay:${Math.random() * .5}s;transform:translateX(${(Math.random() - .5) * 200}px);`;
-        wrap.appendChild(c); setTimeout(() => c.remove(), 6000);
-      }
+    // ── BIRTHDAY EXPLOSION ───────────────────────────────
+    // Checks if today is Feb 22 (birthday). 
+    // Every page load on the birthday fires the full celebration sequence.
+    // The _birthdayFired flag prevents the tick() loop from re-triggering it every second.
+    let _birthdayFired = false;
+
+    function isBirthdayToday() {
+      const now = new Date();
+      return now.getMonth() === 1 && now.getDate() === 22;
     }
 
-    function spawnBalloonBurst(extraCount = 0) {
-      for (let i = 0; i < 5 + extraCount; i++) setTimeout(mkBalloon, i * 80);
+    function birthdayEruption() {
+      // Immediate blast
+      bigParty();
+
+      // 3 more bursts — sustained eruption feeling
+      setTimeout(bigParty, 1500);
+      setTimeout(bigParty, 3000);
+      setTimeout(bigParty, 4500);
+
+      // Every 10s for the next minute — so late openers still get the effect
+      let repeats = 0;
+      const repeatTimer = setInterval(() => {
+        bigParty();
+        repeats++;
+        if (repeats >= 6) clearInterval(repeatTimer); // 6 × 10s = 60s
+      }, 10000);
     }
 
-    // The main birthday eruption
-    function triggerBirthdayEruption() {
-      if (_birthdayFired) return; // ONE-TIME GUARD
-      _birthdayFired = true;
-
-      // 1. Hide countdown grid/label, show glowing message
-      document.getElementById('cdGrid').style.display = 'none';
-      document.getElementById('cdLabel').style.display = 'none';
-      const bd = document.getElementById('bdayNow');
-      bd.style.display = 'block';
-
-      // 2. IMMEDIATE confetti + balloon explosion
-      spawnConfetti(45);
-      spawnBalloonBurst(4); // strong start
-
-      // 3. Three more bursts at 1.5s, 3s, 4.5s
-      setTimeout(() => { spawnConfetti(40); spawnBalloonBurst(3); }, 1500);
-      setTimeout(() => { spawnConfetti(40); spawnBalloonBurst(3); }, 3000);
-      setTimeout(() => { spawnConfetti(40); spawnBalloonBurst(3); }, 4500);
-
-      // 4. Then every 10 seconds for the next minute (6 times: 10,20,30,40,50,60)
-      for (let t = 10; t <= 60; t += 10) {
-        setTimeout(() => {
-          spawnConfetti(35);
-          spawnBalloonBurst(2);
-        }, t * 1000);
-      }
-
-      // Also update age badge to "IT'S HERE!"
-      const ageSpan = document.getElementById('ageBadge');
-      if (ageSpan) ageSpan.textContent = `🎂 HAPPY BIRTHDAY! 🎂`;
+    // Fire on page load if it's already the birthday
+    if (isBirthdayToday()) {
+      // Small delay so the page renders first
+      setTimeout(birthdayEruption, 900);
     }
 
     // ── COUNTDOWN (DOB: Feb 22, 2007) ────────────────────
@@ -1194,36 +1179,28 @@
     function pad(n) { return String(n).padStart(2, '0'); }
 
     function tick() {
-      const now = new Date();
-      const isBday = now.getMonth() === 1 && now.getDate() === 22;
-
-      // If birthday, trigger eruption (only once) and adjust UI
-      if (isBday) {
-        // Eruption if not yet fired
-        if (!_birthdayFired) {
-          triggerBirthdayEruption();
-        }
-        // Ensure message stays visible, grid hidden
-        document.getElementById('cdGrid').style.display = 'none';
-        document.getElementById('cdLabel').style.display = 'none';
-        const bd = document.getElementById('bdayNow');
-        bd.style.display = 'block';
-        // Update age badge with next age
-        const nextAge = calcAge(now) + 1;
-        document.getElementById('ageBadge').textContent = `🎉 Happy ${nextAge}th! 🎉`;
-        return; // skip normal countdown
-      }
-
-      // Not birthday: show countdown normally
-      const nb = getNextBirthday(), diff = nb - now;
+      const now = new Date(), nb = getNextBirthday(), diff = nb - now;
       const currentAge = calcAge(now), nextAge = currentAge + 1;
       document.getElementById('ageBadge').textContent = `🎉 Turning ${nextAge}! 🎉`;
       document.getElementById('cdLabel').textContent = `⏰ COUNTDOWN TO ${nextAge}TH BIRTHDAY ⏰`;
-      
-      // Make sure grid is visible, message hidden
-      document.getElementById('cdGrid').style.display = 'flex';
-      document.getElementById('cdLabel').style.display = 'block';
-      document.getElementById('bdayNow').style.display = 'none';
+
+      if (isBirthdayToday()) {
+        // Hide the countdown grid & label
+        document.getElementById('cdGrid').style.display = 'none';
+        document.getElementById('cdLabel').style.display = 'none';
+
+        // Show the glowing birthday message
+        const bd = document.getElementById('bdayNow');
+        bd.style.display = 'block';
+        bd.innerHTML = `🎉 IT'S YOUR BIRTHDAY TODAY! 🎉<br><span style="font-size:.8em;color:#fff;text-shadow:none;">Happy ${nextAge}th, gorgeous! 🌟</span>`;
+
+        // Trigger the eruption once per page load (not every second)
+        if (!_birthdayFired) {
+          _birthdayFired = true;
+          birthdayEruption();
+        }
+        return;
+      }
 
       const dd = Math.floor(diff / 86400000), hh = Math.floor((diff % 86400000) / 3600000);
       const mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
@@ -1234,7 +1211,18 @@
     }
     tick(); setInterval(tick, 1000);
 
-    // ── PARTY / CAKE ─────────────────────────────────────────
+    // ── CONFETTI ─────────────────────────────────────────
+    const confCols = ['#ff69b4', '#FFD700', '#0088cc', '#cc44ff', '#ff3333', '#00cc88', '#ff8800', '#fff'];
+    const confShapes = ['★', '✦', '●', '■', '▲', '♥', '◆'];
+    function spawnConfetti(count) {
+      const wrap = document.getElementById('confetti');
+      for (let i = 0; i < (count || 20); i++) {
+        const c = document.createElement('div'); c.className = 'confetti-piece';
+        c.textContent = confShapes[Math.floor(Math.random() * confShapes.length)];
+        c.style.cssText = `left:${Math.random() * 100}%;top:-20px;color:${confCols[Math.floor(Math.random() * confCols.length)]};font-size:${8 + Math.random() * 12}px;animation-duration:${2 + Math.random() * 3}s;animation-delay:${Math.random() * .5}s;transform:translateX(${(Math.random() - .5) * 200}px);`;
+        wrap.appendChild(c); setTimeout(() => c.remove(), 6000);
+      }
+    }
     function bigParty() {
       for (let i = 0; i < 7; i++) setTimeout(() => spawnConfetti(22), i * 200);
       for (let i = 0; i < 5; i++) setTimeout(mkBalloon, i * 350);
@@ -1512,25 +1500,12 @@
       else { h.textContent = '❌ Nope! Keep guessing or just scratch!'; h.style.color = '#ff3333'; }
     }
 
-    // ── PAGE LOAD CONFETTI BURST ─────────────────────────────
-    // This ensures confetti pops every time the page loads
-    window.addEventListener('load', function() {
-      // Initial confetti burst on page load
-      spawnConfetti(50);
-      spawnBalloonBurst(5);
-      
-      // Second burst after 0.5 seconds for extra pop
-      setTimeout(() => {
-        spawnConfetti(40);
-        spawnBalloonBurst(3);
-      }, 500);
-      
-      // Third burst after 1 second for sustained effect
-      setTimeout(() => {
-        spawnConfetti(30);
-        spawnBalloonBurst(2);
-      }, 1000);
-    });
+    // ── INIT ─────────────────────────────────────────────
+    // Only fire generic party poppers on non-birthday page loads
+    if (!isBirthdayToday()) {
+      setTimeout(bigParty, 800);
+      setTimeout(bigParty, 2600);
+    }
   </script>
 </body>
 
