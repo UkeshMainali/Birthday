@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🎂 Happy Birthday! 🎂</title>
+  <title>🎂 Happy Birthday, Yunau! 🎂</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;900&display=swap"
     rel="stylesheet">
   <style>
@@ -284,12 +284,21 @@
 
     .birthday-now {
       display: none;
-      font-size: clamp(9px, 3vw, 13px);
+      font-size: clamp(14px, 5vw, 24px);
       color: var(--gold);
-      text-shadow: 0 0 12px gold;
-      animation: rainbow 1s linear infinite;
-      padding: 10px;
-      line-height: 2;
+      text-shadow: 0 0 20px gold, 0 0 40px #ffaa00;
+      animation: glowPulse 0.8s ease-in-out infinite alternate;
+      padding: 20px 10px;
+      line-height: 1.8;
+      background: rgba(0,0,0,0.3);
+      border-radius: 30px;
+      border: 3px solid gold;
+      margin: 10px 0;
+    }
+    
+    @keyframes glowPulse {
+      from { text-shadow: 0 0 20px gold, 0 0 40px #ffaa00; transform: scale(1); }
+      to { text-shadow: 0 0 40px gold, 0 0 80px #ffaa00, 0 0 120px #ff6600; transform: scale(1.03); }
     }
 
     /* CAKE */
@@ -931,7 +940,7 @@
 
     <div class="divider">◆ ◆ ◆ ◆ ◆</div>
 
-    <!-- COUNTDOWN -->
+    <!-- COUNTDOWN / BIRTHDAY MESSAGE -->
     <div class="cd-section pbox">
       <span class="cd-label" id="cdLabel">⏰ COUNTDOWN TO BIRTHDAY ⏰</span>
       <div class="cd-grid" id="cdGrid">
@@ -940,7 +949,7 @@
         <div class="cd-block" data-l="MINS"><span class="cd-num" id="mins">00</span></div>
         <div class="cd-block" data-l="SECS"><span class="cd-num" id="secs">00</span></div>
       </div>
-      <div class="birthday-now" id="bdayNow">🎉 IT'S YOUR BIRTHDAY TODAY! 🎉</div>
+      <div class="birthday-now" id="bdayNow">🎉 IT'S YOUR BIRTHDAY TODAY! 🎉<br><span style="font-size:0.7em;">✨ YUNAU ✨</span></div>
     </div>
 
     <div class="divider">◆ ◆ ◆ ◆ ◆</div>
@@ -1118,6 +1127,58 @@
     setInterval(mkBalloon, 2200);
     for (let i = 0; i < 4; i++) setTimeout(mkBalloon, i * 600);
 
+    // ── BIRTHDAY EXPLOSION LOGIC (with _birthdayFired flag) ────────────────────
+    let _birthdayFired = false; // ensures it only triggers once
+    const confCols = ['#ff69b4', '#FFD700', '#0088cc', '#cc44ff', '#ff3333', '#00cc88', '#ff8800', '#fff'];
+    const confShapes = ['★', '✦', '●', '■', '▲', '♥', '◆'];
+    
+    function spawnConfetti(count) {
+      const wrap = document.getElementById('confetti');
+      for (let i = 0; i < (count || 20); i++) {
+        const c = document.createElement('div'); c.className = 'confetti-piece';
+        c.textContent = confShapes[Math.floor(Math.random() * confShapes.length)];
+        c.style.cssText = `left:${Math.random() * 100}%;top:-20px;color:${confCols[Math.floor(Math.random() * confCols.length)]};font-size:${8 + Math.random() * 12}px;animation-duration:${2 + Math.random() * 3}s;animation-delay:${Math.random() * .5}s;transform:translateX(${(Math.random() - .5) * 200}px);`;
+        wrap.appendChild(c); setTimeout(() => c.remove(), 6000);
+      }
+    }
+
+    function spawnBalloonBurst(extraCount = 0) {
+      for (let i = 0; i < 5 + extraCount; i++) setTimeout(mkBalloon, i * 80);
+    }
+
+    // The main birthday eruption
+    function triggerBirthdayEruption() {
+      if (_birthdayFired) return; // ONE-TIME GUARD
+      _birthdayFired = true;
+
+      // 1. Hide countdown grid/label, show glowing message
+      document.getElementById('cdGrid').style.display = 'none';
+      document.getElementById('cdLabel').style.display = 'none';
+      const bd = document.getElementById('bdayNow');
+      bd.style.display = 'block';
+
+      // 2. IMMEDIATE confetti + balloon explosion
+      spawnConfetti(45);
+      spawnBalloonBurst(4); // strong start
+
+      // 3. Three more bursts at 1.5s, 3s, 4.5s
+      setTimeout(() => { spawnConfetti(40); spawnBalloonBurst(3); }, 1500);
+      setTimeout(() => { spawnConfetti(40); spawnBalloonBurst(3); }, 3000);
+      setTimeout(() => { spawnConfetti(40); spawnBalloonBurst(3); }, 4500);
+
+      // 4. Then every 10 seconds for the next minute (6 times: 10,20,30,40,50,60)
+      for (let t = 10; t <= 60; t += 10) {
+        setTimeout(() => {
+          spawnConfetti(35);
+          spawnBalloonBurst(2);
+        }, t * 1000);
+      }
+
+      // Also update age badge to "IT'S HERE!"
+      const ageSpan = document.getElementById('ageBadge');
+      if (ageSpan) ageSpan.textContent = `🎂 HAPPY BIRTHDAY! 🎂`;
+    }
+
     // ── COUNTDOWN (DOB: Feb 22, 2007) ────────────────────
     function getNextBirthday() {
       const now = new Date(), b = new Date(now.getFullYear(), 1, 22, 0, 0, 0, 0);
@@ -1133,19 +1194,37 @@
     function pad(n) { return String(n).padStart(2, '0'); }
 
     function tick() {
-      const now = new Date(), nb = getNextBirthday(), diff = nb - now;
-      const currentAge = calcAge(now), nextAge = currentAge + 1;
-      document.getElementById('ageBadge').textContent = `🎉 Turning ${nextAge}! 🎉`;
-      document.getElementById('cdLabel').textContent = `⏰ COUNTDOWN TO ${nextAge}TH BIRTHDAY ⏰`;
+      const now = new Date();
       const isBday = now.getMonth() === 1 && now.getDate() === 22;
+
+      // If birthday, trigger eruption (only once) and adjust UI
       if (isBday) {
+        // Eruption if not yet fired
+        if (!_birthdayFired) {
+          triggerBirthdayEruption();
+        }
+        // Ensure message stays visible, grid hidden
         document.getElementById('cdGrid').style.display = 'none';
         document.getElementById('cdLabel').style.display = 'none';
         const bd = document.getElementById('bdayNow');
         bd.style.display = 'block';
-        bd.innerHTML = `🎉 IT'S YOUR BIRTHDAY TODAY! 🎉<br><span style="font-size:.8em;color:#fff">Happy ${nextAge}th, gorgeous! 🌟</span>`;
-        return;
+        // Update age badge with next age
+        const nextAge = calcAge(now) + 1;
+        document.getElementById('ageBadge').textContent = `🎉 Happy ${nextAge}th! 🎉`;
+        return; // skip normal countdown
       }
+
+      // Not birthday: show countdown normally
+      const nb = getNextBirthday(), diff = nb - now;
+      const currentAge = calcAge(now), nextAge = currentAge + 1;
+      document.getElementById('ageBadge').textContent = `🎉 Turning ${nextAge}! 🎉`;
+      document.getElementById('cdLabel').textContent = `⏰ COUNTDOWN TO ${nextAge}TH BIRTHDAY ⏰`;
+      
+      // Make sure grid is visible, message hidden
+      document.getElementById('cdGrid').style.display = 'flex';
+      document.getElementById('cdLabel').style.display = 'block';
+      document.getElementById('bdayNow').style.display = 'none';
+
       const dd = Math.floor(diff / 86400000), hh = Math.floor((diff % 86400000) / 3600000);
       const mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
       document.getElementById('days').textContent = pad(dd);
@@ -1155,18 +1234,7 @@
     }
     tick(); setInterval(tick, 1000);
 
-    // ── CONFETTI ─────────────────────────────────────────
-    const confCols = ['#ff69b4', '#FFD700', '#0088cc', '#cc44ff', '#ff3333', '#00cc88', '#ff8800', '#fff'];
-    const confShapes = ['★', '✦', '●', '■', '▲', '♥', '◆'];
-    function spawnConfetti(count) {
-      const wrap = document.getElementById('confetti');
-      for (let i = 0; i < (count || 20); i++) {
-        const c = document.createElement('div'); c.className = 'confetti-piece';
-        c.textContent = confShapes[Math.floor(Math.random() * confShapes.length)];
-        c.style.cssText = `left:${Math.random() * 100}%;top:-20px;color:${confCols[Math.floor(Math.random() * confCols.length)]};font-size:${8 + Math.random() * 12}px;animation-duration:${2 + Math.random() * 3}s;animation-delay:${Math.random() * .5}s;transform:translateX(${(Math.random() - .5) * 200}px);`;
-        wrap.appendChild(c); setTimeout(() => c.remove(), 6000);
-      }
-    }
+    // ── PARTY / CAKE ─────────────────────────────────────────
     function bigParty() {
       for (let i = 0; i < 7; i++) setTimeout(() => spawnConfetti(22), i * 200);
       for (let i = 0; i < 5; i++) setTimeout(mkBalloon, i * 350);
@@ -1216,7 +1284,7 @@
     ];
 
     let galPaused = false;
-    let currentAngle = 0; // tracks the live CSS angle
+    let currentAngle = 0;
     let animRunning = true;
 
     function buildGallery() {
@@ -1235,18 +1303,15 @@
     }
     buildGallery();
 
-    // Reads the current rotateY from the element's computed transform
     function getComputedAngle(el) {
       const st = window.getComputedStyle(el);
       const mx = new DOMMatrixReadOnly(st.transform);
-      // For a rotateY, matrix3d gives us angle via atan2
       return Math.round(Math.atan2(mx.m13, mx.m33) * (180 / Math.PI));
     }
 
     function pauseGallery() {
       const track = document.getElementById('galleryTrack');
       if (!galPaused) {
-        // Snapshot the current visual angle before freezing
         currentAngle = getComputedAngle(track);
         track.style.animation = 'none';
         track.style.transform = `rotateY(${currentAngle}deg)`;
@@ -1259,7 +1324,6 @@
     function galToggle() {
       const track = document.getElementById('galleryTrack');
       if (galPaused) {
-        // Resume: restart animation from current angle via a dynamic keyframe
         const style = document.createElement('style');
         style.id = 'galResume';
         const existing = document.getElementById('galResume');
@@ -1294,17 +1358,15 @@
       let resumeTimer = null;
 
       function scheduleResume() {
-        // Auto-resume rotation 800ms after user lifts finger/mouse
         clearTimeout(resumeTimer);
         resumeTimer = setTimeout(() => {
-          if (galPaused) galToggle(); // resume
+          if (galPaused) galToggle();
         }, 800);
       }
 
-      // Touch: pause on start, spin on move, resume on end
       track.addEventListener('touchstart', e => {
         touchStartX = e.touches[0].clientX;
-        clearTimeout(resumeTimer); // cancel any pending resume
+        clearTimeout(resumeTimer);
         pauseGallery();
       }, { passive: true });
 
@@ -1317,15 +1379,9 @@
         }
       }, { passive: true });
 
-      track.addEventListener('touchend', () => {
-        scheduleResume();
-      }, { passive: true });
+      track.addEventListener('touchend', () => { scheduleResume(); }, { passive: true });
+      track.addEventListener('touchcancel', () => { scheduleResume(); }, { passive: true });
 
-      track.addEventListener('touchcancel', () => {
-        scheduleResume();
-      }, { passive: true });
-
-      // Desktop: pause on mousedown, spin on drag, resume on mouseup
       let mouseDown = false;
       let mouseStartX = 0;
       track.addEventListener('mousedown', e => {
@@ -1385,7 +1441,6 @@
         art.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(135deg,#ff9ff3,#ffeaa7,#81ecec,#a29bfe);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;"><div style="font-size:56px;">💝</div><div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fff;text-shadow:2px 2px 0 #000;text-align:center;line-height:2;">LOVE &amp;<br><span style="color:#FFD700;">BIRTHDAY</span><br>WISHES!</div><div style="font-size:22px;">✨🎉✨</div></div>`;
       }
 
-      // Minecraft-textured scratch overlay
       const grd = sCtx.createLinearGradient(0, 0, w, h);
       grd.addColorStop(0, '#5a8a3c'); grd.addColorStop(.5, '#4a7a2c'); grd.addColorStop(1, '#8B6914');
       sCtx.fillStyle = grd; sCtx.fillRect(0, 0, w, h);
@@ -1458,8 +1513,7 @@
     }
 
     // ── INIT ─────────────────────────────────────────────
-    setTimeout(bigParty, 800);
-    setTimeout(bigParty, 2600);
+    // just to warm up: but we rely on tick() for birthday detection
   </script>
 </body>
 
