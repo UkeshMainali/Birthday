@@ -1181,8 +1181,8 @@
     function tick() {
       const now = new Date(), nb = getNextBirthday(), diff = nb - now;
       const currentAge = calcAge(now), nextAge = currentAge + 1;
-      document.getElementById('ageBadge').textContent = `🎉 Always 16! 🎉`;
-      document.getElementById('cdLabel').textContent = `⏰ COUNTDOWN TO 16TH BIRTHDAY ⏰`;
+      document.getElementById('ageBadge').innerHTML = `🎉<strike>Happy ${nextAge}th</strike> Always 16! 🎉`;
+      document.getElementById('cdLabel').textContent = `⏰ COUNTDOWN TO ${nextAge}TH BIRTHDAY ⏰`;
 
       if (isBirthdayToday()) {
         // Hide the countdown grid & label
